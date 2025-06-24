@@ -1,31 +1,42 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import React, { useState } from 'react';
 import {
   Box, TextField, Radio, RadioGroup, FormControlLabel, FormControl,
-  FormLabel, Typography, Button
+  FormLabel, Button
 } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import toast from 'react-hot-toast';
 import dayjs, { type Dayjs } from 'dayjs';
-import { api } from '@/trpc/react';
 
-export const SecretForm: React.FC = () => {
-  const [accessType, setAccessType] = useState<'public' | 'password'>('public');
-  const [expiredAt, setExpiredAt] = useState<Dayjs | null>(dayjs().add(1, 'day'));
-  const [formValues, setFormValues] = useState({ content: '', password: '' });
+export type TForm = {
+  content: string;
+  password?: string | null;
+  expiresAt: Dayjs | null;
+}
+
+type FormProps = {
+  data?: TForm;
+  onSubmit: (formValues: TForm) => void;
+}
+
+export const SecretForm: React.FC<FormProps> = ({ data, onSubmit }) => {
+  const [accessType, setAccessType] = useState<'public' | 'password'>(data?.password ? 'password' : 'public');
+  const [formValues, setFormValues] = useState<TForm>(data ?? {
+    content: '',
+    password: '',
+    expiresAt: dayjs().add(1, 'day')
+  });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const createMutation = api.secret.create.useMutation();
 
   const validate = () => {
     const errors: Record<string, string> = {};
     if (!formValues.content.trim()) {
       errors.content = 'Content is required';
     }
-    if (!expiredAt?.isValid()) {
-      errors.expiredAt = 'Please select a valid expiration date';
+    if (!formValues?.expiresAt?.isValid()) {
+      errors.expiresAt = 'Please select a valid expiration date';
     }
     if (accessType === 'password' && !formValues.password) {
       errors.password = 'Password is required';
@@ -37,24 +48,12 @@ export const SecretForm: React.FC = () => {
     const errors = validate();
     setFormErrors(errors);
     if (Object.keys(errors).length === 0) {
-      createMutation.mutate(
-        {
-          content: formValues.content,
-          password: accessType === 'password' ? formValues.password : undefined,
-          expiresAt: expiredAt!.toDate(),
-        },
-        {
-          onSuccess: () => toast.success('Secret created successfully'),
-          onError: () => toast.error('Something went wrong'),
-        }
-      );
+      onSubmit(formValues);
     }
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 420, borderRadius: 2, boxShadow: 3 }}>
-      <Typography variant="h6" gutterBottom>Share Content</Typography>
-
+    <Box sx={{ p: 3, maxWidth: 420, borderRadius: 2, boxShadow: 0 }}>
       <TextField
         fullWidth
         label="Content"
@@ -71,14 +70,14 @@ export const SecretForm: React.FC = () => {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DateTimePicker
           label="Expires At"
-          value={expiredAt}
-          onChange={(newValue) => setExpiredAt(newValue)}
+          value={formValues.expiresAt}
+          onChange={(newValue) => setFormValues(prev => ({ ...prev, expiresAt: newValue }))}
           slotProps={{
             textField: {
               fullWidth: true,
               margin: 'normal',
-              error: !!formErrors.expiredAt,
-              helperText: formErrors.expiredAt,
+              error: !!formErrors.expiresAt,
+              helperText: formErrors.expiresAt,
             },
           }}
           disablePast
@@ -90,26 +89,30 @@ export const SecretForm: React.FC = () => {
         <RadioGroup
           row
           value={accessType}
-          onChange={(e) => setAccessType(e.target.value as 'public' | 'password')}
+          onChange={(e) => {
+            setAccessType(e.target.value as 'public' | 'password');
+            setFormValues(prev => ({ ...prev, password: undefined }));
+          }}
         >
           <FormControlLabel value="public" control={<Radio />} label="Public" />
           <FormControlLabel value="password" control={<Radio />} label="Password Protected" />
         </RadioGroup>
       </FormControl>
 
-      {accessType === 'password' && (
-        <TextField
-          fullWidth
-          label="Password"
-          name="password"
-          type="password"
-          value={formValues.password}
-          onChange={(e) => setFormValues(prev => ({ ...prev, password: e.target.value }))}
-          margin="normal"
-          error={!!formErrors.password}
-          helperText={formErrors.password}
-        />
-      )}
+
+      <TextField
+        fullWidth
+        label="Password"
+        name="password"
+        type="password"
+        value={formValues.password ?? undefined}
+        onChange={(e) => setFormValues(prev => ({ ...prev, password: e.target.value }))}
+        margin="normal"
+        error={!!formErrors.password}
+        helperText={formErrors.password}
+        disabled={accessType !== 'password'}
+        autoComplete="off"
+      />
 
       <Button
         variant="contained"
@@ -118,7 +121,7 @@ export const SecretForm: React.FC = () => {
         sx={{ mt: 2 }}
         onClick={handleSubmit}
       >
-        Share
+        {data ? 'Update' : 'Share'}
       </Button>
     </Box>
   );

@@ -11,6 +11,7 @@ export const secretRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const data = ctx.db.secret.findMany({
       where: { createdById: ctx.session.user.id },
+      orderBy: { updatedAt: "desc" },
     });
     return data ?? null;
   }),
@@ -46,7 +47,7 @@ export const secretRouter = createTRPCRouter({
     }),
 
   update: protectedProcedure
-    .input(z.object({ key: z.string(), content: z.string(), expiresAt: z.string().optional(), password: z.string().optional() }))
+    .input(z.object({ key: z.string(), content: z.string(), expiresAt: z.date().optional(), password: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       // if not expired
       const data = await ctx.db.secret.findUnique({
@@ -63,7 +64,7 @@ export const secretRouter = createTRPCRouter({
       if (!data) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Secret has expired',
+          message: 'Secret has been expired or viewed already',
         });
       }
       // if not viewed
@@ -71,9 +72,17 @@ export const secretRouter = createTRPCRouter({
         where: { key: input.key },
         data: {
           content: input.content,
-          expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+          expiresAt: input.expiresAt ?? null,
           password: input.password,
         },
+      });
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ key: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.secret.delete({
+        where: { key: input.key },
       });
     }),
 });
