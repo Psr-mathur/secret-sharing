@@ -20,13 +20,13 @@ model User {
 }
 
 model Secret {
-    id        String    @id @default(cuid())
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    key       String    @unique
-    content   String    @db.VarChar(10000)
-    expiresAt DateTime?
-    views     Int       @default(0)
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    key       String   @unique
+    content   String   @db.VarChar(10000)
+    expiresIn String?
+    views     Int      @default(0)
     password  String?
 
     createdById String

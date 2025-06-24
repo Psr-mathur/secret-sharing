@@ -1,4 +1,5 @@
 import { z } from "zod";
+import ShortUniqueId from "short-unique-id";
 
 import {
   createTRPCRouter,
@@ -29,12 +30,15 @@ export const secretRouter = createTRPCRouter({
     }),
 
   create: protectedProcedure
-    .input(z.object({ content: z.string() }))
+    .input(z.object({ content: z.string(), expiresIn: z.string().optional(), password: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
+      const { randomUUID } = new ShortUniqueId({ length: input.password ? 8 : 6 });
       return ctx.db.secret.create({
         data: {
-          key: 'ddd',
+          key: randomUUID(),
           content: input.content,
+          expiresIn: input.expiresIn,
+          password: input.password,
           createdById: ctx.session.user.id
         },
       });
