@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
@@ -7,8 +7,6 @@ import React from 'react';
 import MUIDataTable, { type MUIDataTableColumnDef, type MUIDataTableProps } from 'mui-datatables';
 import dayjs from 'dayjs';
 import type { Secret } from '@prisma/client';
-import { Box } from '@mui/material';
-import { EditSecret } from './edit-secret';
 import { ActionsColumn } from './actions-column';
 
 interface SecretTableProps {

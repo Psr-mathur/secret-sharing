@@ -1,10 +1,7 @@
-'use client';
 import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
 import { SessionProvider } from 'next-auth/react';
-import { LayoutWrapper } from './_comp/layout-wrapper';
 import { Toaster } from 'react-hot-toast';
-
 
 const geist = Geist({
   subsets: ["latin"],
@@ -16,13 +13,11 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={geist.className}>
+      <body className={geist.className} style={{ margin: 0, padding: 0 }}>
         <SessionProvider>
           <TRPCReactProvider>
             {/* <ThemeProvider theme={theme}> */}
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
+            {children}
             {/* </ThemeProvider> */}
           </TRPCReactProvider>
           <Toaster />

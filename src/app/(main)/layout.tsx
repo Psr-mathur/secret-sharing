@@ -1,10 +1,13 @@
+'use client'
 import { PageHeader } from '@/components/header'
 import { VerifiedUser } from '@mui/icons-material'
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
 
-export const LayoutWrapper = ({ children }: { children: React.ReactNode }) => {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const { data: session, status } = useSession();
   const router = useRouter();
 

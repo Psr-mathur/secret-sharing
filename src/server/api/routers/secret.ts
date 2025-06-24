@@ -4,6 +4,7 @@ import ShortUniqueId from "short-unique-id";
 import {
   createTRPCRouter,
   protectedProcedure,
+  publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from '@trpc/server';
 
@@ -58,6 +59,60 @@ export const secretRouter = createTRPCRouter({
         },
       });
       return { total, active, expired, viewed };
+    }),
+
+  checkIsActive: publicProcedure
+    .input(z.object({ key: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const data = await ctx.db.secret.findUnique({
+        where: {
+          key: input.key,
+          // AND: {
+          //   expiresAt: {
+          //     gt: new Date()
+          //   },
+          //   views: {
+          //     lte: 0
+          //   }
+          // }
+        },
+      });
+      if (!data) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Secret does not exist.',
+        });
+      }
+      if ((data?.expiresAt && data.expiresAt < new Date()) || (data?.views && data.views > 0)) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Secret has been expired or viewed already',
+        });
+      }
+      return true;
+    }),
+
+  viewSecret: publicProcedure
+    .input(z.object({ key: z.string(), password: z.string().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const data = await ctx.db.secret.findUnique({
+        where: { key: input.key },
+      });
+      if (data?.password && data.password !== input.password) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: `Password is incorrect ${input.password}`,
+        });
+      }
+      if (data) {
+        await ctx.db.secret.update({
+          where: { key: input.key },
+          data: {
+            views: data.views + 1,
+          },
+        });
+      }
+      return data ?? null;
     }),
 
   getBySecretKey: protectedProcedure
