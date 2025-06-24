@@ -1,9 +1,9 @@
-import "@/styles/globals.css";
-
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
+import { auth } from '@/server/auth';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -15,9 +15,13 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await auth();
+  if (!session) {
+    redirect("/api/auth/signin");
+  }
   return (
     <html lang="en">
       <body className={geist.className}>
