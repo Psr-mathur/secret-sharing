@@ -5,6 +5,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
+import { TRPCError } from '@trpc/server';
 
 export const secretRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -30,16 +31,48 @@ export const secretRouter = createTRPCRouter({
     }),
 
   create: protectedProcedure
-    .input(z.object({ content: z.string(), expiresIn: z.string().optional(), password: z.string().optional() }))
+    .input(z.object({ content: z.string(), expiresAt: z.date().optional(), password: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const { randomUUID } = new ShortUniqueId({ length: input.password ? 8 : 6 });
       return ctx.db.secret.create({
         data: {
           key: randomUUID(),
           content: input.content,
-          expiresIn: input.expiresIn,
+          expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
           password: input.password,
           createdById: ctx.session.user.id
+        },
+      });
+    }),
+
+  update: protectedProcedure
+    .input(z.object({ key: z.string(), content: z.string(), expiresAt: z.string().optional(), password: z.string().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      // if not expired
+      const data = await ctx.db.secret.findUnique({
+        where: {
+          key: input.key,
+          expiresAt: {
+            gt: new Date()
+          },
+          views: {
+            lt: 1
+          }
+        },
+      });
+      if (!data) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Secret has expired',
+        });
+      }
+      // if not viewed
+      return ctx.db.secret.update({
+        where: { key: input.key },
+        data: {
+          content: input.content,
+          expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+          password: input.password,
         },
       });
     }),

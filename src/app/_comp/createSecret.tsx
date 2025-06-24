@@ -1,34 +1,31 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import React, { useState } from 'react';
 import {
-  Box,
-  TextField,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  Typography,
-  MenuItem,
-  InputAdornment,
-  Button
+  Box, TextField, Radio, RadioGroup, FormControlLabel, FormControl,
+  FormLabel, Typography, Button
 } from '@mui/material';
-import { api } from '@/trpc/react';
+import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import toast from 'react-hot-toast';
-
-const timeUnits = ['minutes', 'hours', 'days', 'weeks', 'months', 'years'];
+import dayjs, { type Dayjs } from 'dayjs';
+import { api } from '@/trpc/react';
 
 export const SecretForm: React.FC = () => {
   const [accessType, setAccessType] = useState<'public' | 'password'>('public');
-  const [duration, setDuration] = useState('');
-  const [unit, setUnit] = useState('hours');
+  const [expiredAt, setExpiredAt] = useState<Dayjs | null>(dayjs().add(1, 'day'));
+  const [formValues, setFormValues] = useState({ content: '', password: '' });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const createMutation = api.secret.create.useMutation();
 
   const validate = () => {
     const errors: Record<string, string> = {};
-    if (!duration || isNaN(Number(duration)) || Number(duration) <= 0) {
-      errors.duration = 'Enter a valid duration';
+    if (!formValues.content.trim()) {
+      errors.content = 'Content is required';
+    }
+    if (!expiredAt?.isValid()) {
+      errors.expiredAt = 'Please select a valid expiration date';
     }
     if (accessType === 'password' && !formValues.password) {
       errors.password = 'Password is required';
@@ -36,33 +33,26 @@ export const SecretForm: React.FC = () => {
     return errors;
   };
 
-  const [formValues, setFormValues] = useState({
-    content: '',
-    password: '',
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormValues(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const errors = validate();
     setFormErrors(errors);
     if (Object.keys(errors).length === 0) {
-      createMutation.mutate({
-        content: formValues.content,
-        expiresIn: `${duration} ${unit}`,
-        password: formValues.password
-      }, {
-        onError: (err) => {
-          toast.error('Something went wrong');
+      createMutation.mutate(
+        {
+          content: formValues.content,
+          password: accessType === 'password' ? formValues.password : undefined,
+          expiresAt: expiredAt!.toDate(),
+        },
+        {
+          onSuccess: () => toast.success('Secret created successfully'),
+          onError: () => toast.error('Something went wrong'),
         }
-      });
+      );
     }
   };
 
   return (
-    <Box component="form" sx={{ p: 3, maxWidth: 400, borderRadius: 2, boxShadow: 3 }} noValidate>
+    <Box sx={{ p: 3, maxWidth: 420, borderRadius: 2, boxShadow: 3 }}>
       <Typography variant="h6" gutterBottom>Share Content</Typography>
 
       <TextField
@@ -72,41 +62,31 @@ export const SecretForm: React.FC = () => {
         multiline
         rows={4}
         value={formValues.content}
-        onChange={handleChange}
+        onChange={(e) => setFormValues(prev => ({ ...prev, content: e.target.value }))}
         margin="normal"
         error={!!formErrors.content}
         helperText={formErrors.content}
       />
 
-      <Box display="flex" gap={2} mt={2}>
-        <TextField
-          label="Expires In"
-          name="duration"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          type="number"
-          fullWidth
-          error={!!formErrors.duration}
-          helperText={formErrors.duration}
-          InputProps={{ endAdornment: <InputAdornment position="end">{unit}</InputAdornment> }}
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DateTimePicker
+          label="Expires At"
+          value={expiredAt}
+          onChange={(newValue) => setExpiredAt(newValue)}
+          slotProps={{
+            textField: {
+              fullWidth: true,
+              margin: 'normal',
+              error: !!formErrors.expiredAt,
+              helperText: formErrors.expiredAt,
+            },
+          }}
+          disablePast
         />
-        <TextField
-          select
-          value={unit}
-          onChange={(e) => setUnit(e.target.value)}
-          fullWidth
-          label="Unit"
-        >
-          {timeUnits.map((unit) => (
-            <MenuItem key={unit} value={unit}>
-              {unit}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Box>
+      </LocalizationProvider>
 
       <FormControl component="fieldset" margin="normal">
-        <FormLabel component="legend">Access</FormLabel>
+        <FormLabel>Access</FormLabel>
         <RadioGroup
           row
           value={accessType}
@@ -124,7 +104,7 @@ export const SecretForm: React.FC = () => {
           name="password"
           type="password"
           value={formValues.password}
-          onChange={handleChange}
+          onChange={(e) => setFormValues(prev => ({ ...prev, password: e.target.value }))}
           margin="normal"
           error={!!formErrors.password}
           helperText={formErrors.password}
@@ -135,8 +115,8 @@ export const SecretForm: React.FC = () => {
         variant="contained"
         color="primary"
         fullWidth
-        onClick={handleSubmit}
         sx={{ mt: 2 }}
+        onClick={handleSubmit}
       >
         Share
       </Button>
