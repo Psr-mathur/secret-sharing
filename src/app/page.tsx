@@ -4,7 +4,7 @@ import { api } from '@/trpc/react';
 import toast from 'react-hot-toast';
 import { SecretTable } from './_comp/table';
 import { ErrorAndLoaderWrapper } from '@/components/error-loader-wrapper';
-import { Button, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import { CreateSecret } from './_comp/create-secret';
 
 export default function Home() {

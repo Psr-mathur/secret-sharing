@@ -16,6 +16,50 @@ export const secretRouter = createTRPCRouter({
     return data ?? null;
   }),
 
+  getCounts: protectedProcedure
+    .query(async ({ ctx }) => {
+      const total = await ctx.db.secret.count({
+        where: { createdById: ctx.session.user.id },
+      });
+      const active = await ctx.db.secret.count({
+        where: {
+          createdById: ctx.session.user.id,
+          AND: {
+            expiresAt: {
+              gt: new Date()
+            },
+            views: {
+              lte: 0
+            }
+          }
+        },
+      });
+      const expired = await ctx.db.secret.count({
+        where: {
+          createdById: ctx.session.user.id,
+          AND: {
+            expiresAt: {
+              lt: new Date(),
+            },
+            views: {
+              lte: 0
+            }
+          }
+        },
+      });
+      const viewed = await ctx.db.secret.count({
+        where: {
+          createdById: ctx.session.user.id,
+          AND: {
+            views: {
+              gt: 0
+            }
+          }
+        },
+      });
+      return { total, active, expired, viewed };
+    }),
+
   getBySecretKey: protectedProcedure
     .input(z.object({ key: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -53,11 +97,13 @@ export const secretRouter = createTRPCRouter({
       const data = await ctx.db.secret.findUnique({
         where: {
           key: input.key,
-          expiresAt: {
-            gt: new Date()
-          },
-          views: {
-            lt: 1
+          AND: {
+            expiresAt: {
+              gt: new Date()
+            },
+            views: {
+              lt: 1
+            }
           }
         },
       });

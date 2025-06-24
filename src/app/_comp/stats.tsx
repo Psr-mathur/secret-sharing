@@ -1,8 +1,16 @@
 import { StatCard } from '@/components/stat-card'
 import { Box } from '@mui/material'
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
+import { HourglassDisabled, Key, PendingActions, Visibility } from '@mui/icons-material'
+import { api } from '@/trpc/react'
+import toast from 'react-hot-toast'
 
 export const Stats = () => {
+  const { data: viewedCount } = api.secret.getCounts.useQuery(undefined, {
+    throwOnError: () => {
+      toast.error('Failed to fetch stats');
+      return false;
+    }
+  });
   return (
     <Box sx={{
       display: 'flex',
@@ -13,19 +21,24 @@ export const Stats = () => {
       flexWrap: 'wrap',
     }}>
       <StatCard
-        title="Secrets"
-        count={0}
-        icon={<VerifiedUserIcon />}
+        title="Total"
+        count={viewedCount?.total ?? 0}
+        icon={<Key fontSize='large' />}
       />
       <StatCard
-        title="Secrets"
-        count={0}
-        icon={<VerifiedUserIcon />}
+        title="Active"
+        count={viewedCount?.active ?? 0}
+        icon={<PendingActions fontSize='large' />}
       />
       <StatCard
-        title="Secrets"
-        count={0}
-        icon={<VerifiedUserIcon />}
+        title="Expired"
+        count={viewedCount?.expired ?? 0}
+        icon={<HourglassDisabled fontSize='large' />}
+      />
+      <StatCard
+        title="Viewed"
+        count={viewedCount?.viewed ?? 0}
+        icon={<Visibility fontSize='large' />}
       />
     </Box>
   )
