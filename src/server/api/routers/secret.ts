@@ -92,7 +92,7 @@ export const secretRouter = createTRPCRouter({
       return true;
     }),
 
-  viewSecret: publicProcedure
+  checkPassword: publicProcedure
     .input(z.object({ key: z.string(), password: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const data = await ctx.db.secret.findUnique({
@@ -104,15 +104,36 @@ export const secretRouter = createTRPCRouter({
           message: `Password is incorrect`,
         });
       }
-      if (data) {
-        await ctx.db.secret.update({
-          where: { key: input.key },
-          data: {
-            views: data.views + 1,
-          },
+      return true;
+    }),
+
+  viewSecret: publicProcedure
+    .input(z.object({ key: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const data = await ctx.db.secret.findUnique({
+        where: { key: input.key },
+      });
+      if (!data) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Secret does not exist.',
         });
       }
-      return data ?? null;
+
+      if ((data?.expiresAt && data.expiresAt < new Date()) || (data?.views && data.views > 0)) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Secret has been expired or viewed already',
+        });
+      }
+
+      await ctx.db.secret.update({
+        where: { key: input.key },
+        data: {
+          views: data.views + 1,
+        },
+      });
+      return data;
     }),
 
   getBySecretKey: protectedProcedure

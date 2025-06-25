@@ -1,50 +1,52 @@
 'use client'
-import { Box, Typography } from '@mui/material';
+import { Divider, Paper, Typography } from '@mui/material';
 import React, { use, useState } from 'react'
 import { PasswordForm } from './_comp/password-form';
 import { api } from '@/trpc/react';
 import { ErrorAndLoaderWrapper } from '@/components/error-loader-wrapper';
-import type { Secret } from '@prisma/client';
+import SecretMessage from './_comp/secret-content';
 
 export default function ViewPage({ params }: { params: Promise<{ key: string }> }) {
   const { key } = use(params);
-  const [data, setData] = useState<Secret | null>(null);
   const isPasswordProtected = key.length === 8;
+  const [passVerified, setPassVerified] = useState<boolean>(false);
 
-  const isActiveRes = api.secret.checkIsActive.useQuery({ key }, {
-    refetchOnWindowFocus: false
+  const dataRes = api.secret.viewSecret.useQuery({ key }, {
+    refetchOnWindowFocus: false,
+    enabled: isPasswordProtected ? passVerified : true,
   });
+
+  console.log(passVerified, isPasswordProtected, dataRes.data);
+
+  if (isPasswordProtected && !passVerified) {
+    return (
+      <PasswordForm
+        secretKey={key}
+        onSuccessCallBack={() => {
+          setPassVerified(true);
+        }}
+      />
+    )
+  }
 
   return (
     <ErrorAndLoaderWrapper
-      isLoading={isActiveRes.isLoading}
-      isError={isActiveRes.isError}
+      isLoading={dataRes.isLoading}
+      isError={dataRes.isError}
       error={{
         name: 'Failed to fetch secret',
-        message: isActiveRes.error?.message ?? ''
+        message: dataRes.error?.message ?? ''
       }}
-      data={isActiveRes.data}
+      data={dataRes.data}
     >
-      {(isActive) => {
-        if (isPasswordProtected && isActive && !data) {
-          return (
-            <PasswordForm
-              secretKey={key}
-              onSuccessCallBack={setData}
-            />
-          )
-        }
+      {(data) => {
         return (
-          <Box>
-            <Typography variant="h6">
-              Secret Message
-            </Typography>
-            <Typography>
-              {data?.content}
-            </Typography>
-          </Box>
+          <SecretMessage
+            content={data.content}
+          />
         )
       }}
     </ErrorAndLoaderWrapper>
   )
 }
+

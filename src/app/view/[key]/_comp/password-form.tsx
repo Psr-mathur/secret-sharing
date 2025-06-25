@@ -6,19 +6,18 @@ import {
 } from '@mui/material';
 import { api } from '@/trpc/react';
 import toast from 'react-hot-toast';
-import type { Secret } from '@prisma/client';
 
 
 type FormProps = {
   secretKey: string
-  onSuccessCallBack: (data: Secret) => void
+  onSuccessCallBack: () => void
 }
 
 export const PasswordForm: React.FC<FormProps> = ({ secretKey, onSuccessCallBack }) => {
   const [password, setPassword] = useState<string>('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const viewMutation = api.secret.viewSecret.useMutation();
+  const checkPassMutation = api.secret.checkPassword.useMutation();
 
   const validate = () => {
     const errors: Record<string, string> = {};
@@ -32,13 +31,13 @@ export const PasswordForm: React.FC<FormProps> = ({ secretKey, onSuccessCallBack
     const errors = validate();
     setFormErrors(errors);
     if (Object.keys(errors).length === 0) {
-      viewMutation.mutate(
+      checkPassMutation.mutate(
         {
           key: secretKey,
           password: password ?? undefined
         }, {
-        onSuccess: (data) => {
-          onSuccessCallBack(data!);
+        onSuccess: () => {
+          onSuccessCallBack();
         },
         onError: (error) => {
           toast.error(error.message ?? 'Something went wrong');
@@ -69,7 +68,7 @@ export const PasswordForm: React.FC<FormProps> = ({ secretKey, onSuccessCallBack
         fullWidth
         sx={{ mt: 2 }}
         onClick={handleSubmit}
-        disabled={viewMutation.isPending}
+        disabled={checkPassMutation.isPending}
       >
         Submit
       </Button>
