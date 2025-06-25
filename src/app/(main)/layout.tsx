@@ -1,16 +1,16 @@
 import { PageHeader } from '@/components/header'
-import { VerifiedUser } from '@mui/icons-material'
 import AuthWrapper from './_comp/auth-wrapper'
 import { auth } from '@/server/auth'
 import { redirect } from 'next/navigation';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import SignOutBtn from './_comp/signout-button';
 
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
   if (!session) {
-    return redirect('/api/auth/signin');
+    return redirect('/signin');
   }
 
   return (
@@ -21,7 +21,10 @@ export default async function RootLayout({
             Secret Share
           </PageHeader.Title>
           <PageHeader.Content>
-            <VerifiedUser />
+            <Typography variant="body1">
+              {session.user.name}
+            </Typography>
+            <SignOutBtn />
           </PageHeader.Content>
         </PageHeader>
         {children}

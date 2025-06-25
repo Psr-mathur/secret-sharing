@@ -9,7 +9,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (status !== 'loading' && !session) {
-      const authUrl = new URL('/api/auth/signin', window.location.origin);
+      const authUrl = new URL('/signin', window.location.origin);
       router.push(authUrl.toString());
     }
   }, [router, session, status]);

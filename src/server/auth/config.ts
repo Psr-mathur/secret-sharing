@@ -60,5 +60,8 @@ export const authConfig = {
       return session;
     },
   },
+  pages: {
+    signIn: "/signin",
+  },
   session: { strategy: "jwt" },
 } satisfies NextAuthConfig;
