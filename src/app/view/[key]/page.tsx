@@ -1,5 +1,4 @@
 'use client'
-import { Divider, Paper, Typography } from '@mui/material';
 import React, { use, useState } from 'react'
 import { PasswordForm } from './_comp/password-form';
 import { api } from '@/trpc/react';
