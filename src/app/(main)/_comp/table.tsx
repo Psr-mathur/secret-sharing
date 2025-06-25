@@ -4,6 +4,7 @@ import MUIDataTable, { type MUIDataTableColumnDef, type MUIDataTableProps } from
 import dayjs from 'dayjs';
 import type { Secret } from '@prisma/client';
 import { ActionsColumn } from './actions-column';
+import CopyLink from './link-with-copy';
 
 interface SecretTableProps {
   data: Secret[];
@@ -36,9 +37,9 @@ export const SecretTable: React.FC<SecretTableProps> = ({ data, options }) => {
       options: {
         filter: false, sort: true,
         customBodyRender: (value) => (
-          <a href={`/view/${value}`} target="_blank" rel="noopener noreferrer">
-            View
-          </a>
+          <CopyLink
+            url={`${window.location.origin}/view/${value}`}
+          />
         )
       },
     },
