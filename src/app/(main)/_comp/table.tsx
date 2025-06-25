@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import type { Secret } from '@prisma/client';
 import { ActionsColumn } from './actions-column';
 import CopyLink from './link-with-copy';
+import { Lock, LockOpen } from '@mui/icons-material';
 
 interface SecretTableProps {
   data: Secret[];
@@ -12,6 +13,7 @@ interface SecretTableProps {
 }
 
 export const SecretTable: React.FC<SecretTableProps> = ({ data, options }) => {
+
   const columns: MUIDataTableColumnDef[] = [
     {
       name: 'content',
@@ -44,19 +46,28 @@ export const SecretTable: React.FC<SecretTableProps> = ({ data, options }) => {
       },
     },
     {
-      name: 'expiredAt',
+      name: 'expiresAt',
       label: 'Expires At',
       options: {
-        customBodyRender: (value) =>
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          dayjs(value).isValid() ? dayjs(value).format('YYYY-MM-DD HH:mm') : 'Invalid date',
+        customBodyRender: (value: Date | null) => {
+          if (value) {
+            return dayjs(value).format('YYYY-MM-DD HH:mm A');
+          }
+          return dayjs().format('YYYY-MM-DD HH:mm A');
+        }
       },
     },
     {
       name: 'password',
       label: 'Protected',
       options: {
-        customBodyRender: (value) => (value ? 'Yes' : 'No'),
+        customBodyRender: (value) => {
+          if (value) {
+            return <Lock />
+          } else {
+            return <LockOpen />
+          }
+        },
       },
     },
     {
