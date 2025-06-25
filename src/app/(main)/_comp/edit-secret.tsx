@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+
+
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material'
 import React from 'react'
 import { SecretForm, type TForm } from './secret-form'
@@ -31,7 +31,7 @@ export const EditSecret = ({ data }: { data: Secret }) => {
   return (
     <>
       <IconButton onClick={() => setOpen(true)}>
-        <Edit />
+        <Edit color='primary' />
       </IconButton>
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>

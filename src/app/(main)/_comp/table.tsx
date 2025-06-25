@@ -1,7 +1,3 @@
-
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 'use client';
 import React from 'react';
 import MUIDataTable, { type MUIDataTableColumnDef, type MUIDataTableProps } from 'mui-datatables';
@@ -51,6 +47,7 @@ export const SecretTable: React.FC<SecretTableProps> = ({ data, options }) => {
       label: 'Expires At',
       options: {
         customBodyRender: (value) =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           dayjs(value).isValid() ? dayjs(value).format('YYYY-MM-DD HH:mm') : 'Invalid date',
       },
     },

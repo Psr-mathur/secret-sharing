@@ -1,24 +1,19 @@
-'use client'
 import { PageHeader } from '@/components/header'
 import { VerifiedUser } from '@mui/icons-material'
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import React, { useEffect } from 'react'
+import AuthWrapper from './_comp/auth-wrapper'
+import { auth } from '@/server/auth'
+import { redirect } from 'next/navigation';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const session = await auth();
+  if (!session) {
+    return redirect('/api/auth/signin');
+  }
 
-  useEffect(() => {
-    if (status !== 'loading' && !session) {
-      const authUrl = new URL('/api/auth/signin', window.location.origin);
-      router.push(authUrl.toString());
-    }
-  }, [router, session, status]);
   return (
-    <>
+    <AuthWrapper>
       <PageHeader>
         <PageHeader.Title >
           Secret Share
@@ -28,6 +23,6 @@ export default function RootLayout({
         </PageHeader.Content>
       </PageHeader>
       {children}
-    </>
+    </AuthWrapper>
   )
 }
