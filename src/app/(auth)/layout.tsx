@@ -3,7 +3,7 @@ import { Paper } from '@mui/material';
 import Box from '@mui/material/Box';
 import MuiCard from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -37,7 +37,7 @@ const AuthPageContainer = styled(Stack)(({ }) => ({
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-
+  const theme = useTheme();
   return (
     <Box position={'relative'}>
       <AuthPageContainer direction="column" justifyContent="center" alignItems="center">
@@ -46,7 +46,7 @@ export default function RootLayout({
           width: '70vw',
           height: '85vh',
           borderRadius: '20px',
-          background: 'radial-gradient(circle, rgb(204, 198, 198) 0%, #9F1821 100%)',
+          background: `radial-gradient(circle, rgb(204, 198, 198) 0%, ${theme.palette.primary.main} 100%)`,
         }}>
           <Card variant="outlined" sx={{ p: 0, textAlign: "center", maxWidth: '540px', borderRadius: '20px', overflow: 'hidden' }}>
             <Box
