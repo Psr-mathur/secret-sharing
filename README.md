@@ -1,29 +1,108 @@
-# Create T3 App
+# Secret Sharing
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A secure platform for sharing sensitive information using the T3 Stack. Share secrets with optional password protection, expiration times, and view limits.
 
-## What's next? How do I make an app with this?
+🌐 **Live Demo**: [secret-sharing-delta.vercel.app](https://secret-sharing-delta.vercel.app)
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Features
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- 🔐 Secure secret sharing with optional password protection
+- ⏰ Set expiration times for secrets
+- 👥 Track number of views
+- 🔑 User authentication
+- 📝 Support for long text content (up to 10,000 characters)
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Tech Stack
 
-## Learn More
+- [Next.js](https://nextjs.org) - React framework
+- [NextAuth.js](https://next-auth.js.org) - Authentication
+- [Prisma](https://prisma.io) - Database ORM
+- [PostgreSQL](https://www.postgresql.org/) - Database
+- [tRPC](https://trpc.io) - End-to-end typesafe API
+- [Material UI](https://mui.com/) - UI components
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## Getting Started
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### Prerequisites
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- Node.js 18+
+- PostgreSQL database
+- npm or yarn
 
-## How do I deploy this?
+### Installation
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+1. Clone the repository
+2. Copy `.env.example` to `.env` and update the variables
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Set up the database:
+   ```bash
+   npm run db:push
+   ```
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Database Schema
+
+### User
+```prisma
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    email         String    @unique
+    emailVerified DateTime?
+    password      String?
+    secrets       Secret[]
+}
+```
+
+### Secret
+```prisma
+model Secret {
+    id          String    @id @default(cuid())
+    key         String    @unique
+    content     String    @db.VarChar(10000)
+    expiresAt   DateTime?
+    views       Int       @default(0)
+    password    String?
+    createdById String
+    createdBy   User      @relation(fields: [createdById], references: [id])
+}
+```
+
+## Development
+
+```bash
+# Run development server
+npm run dev
+
+# Type checking
+npm run typecheck
+
+# Linting
+npm run lint
+
+# Formatting
+npm run format:write
+
+# Database management
+npm run db:generate  # Generate Prisma client
+npm run db:push      # Push schema changes
+npm run db:studio    # Open Prisma Studio
+```
+
+## Deployment
+
+This application is deployed on Vercel at [secret-sharing-delta.vercel.app](https://secret-sharing-delta.vercel.app).
+
+You can also deploy it on:
+- [Netlify](https://create.t3.gg/en/deployment/netlify)
+- [Docker](https://create.t3.gg/en/deployment/docker)
+
+## License
+
+MIT
