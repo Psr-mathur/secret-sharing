@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 export const CreateSecret = () => {
   const [open, setOpen] = React.useState(false);
   const createMutation = api.secret.create.useMutation();
+  const apiUtils = api.useUtils();
 
   const onSubmit = (formValues: TForm) => {
     createMutation.mutate(
@@ -17,8 +18,12 @@ export const CreateSecret = () => {
         expiresAt: formValues.expiresAt?.toDate(),
       },
       {
-        onSuccess: () => toast.success('Secret created successfully'),
+        onSuccess: () => {
+          toast.success('Secret created successfully');
+          apiUtils.secret.getAll.invalidate().catch(console.error);
+        },
         onError: () => toast.error('Something went wrong'),
+        onSettled: () => setOpen(false),
       }
     );
   }

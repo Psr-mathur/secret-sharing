@@ -3,6 +3,7 @@ import { VerifiedUser } from '@mui/icons-material'
 import AuthWrapper from './_comp/auth-wrapper'
 import { auth } from '@/server/auth'
 import { redirect } from 'next/navigation';
+import { Box } from '@mui/material';
 
 export default async function RootLayout({
   children,
@@ -14,15 +15,17 @@ export default async function RootLayout({
 
   return (
     <AuthWrapper>
-      <PageHeader>
-        <PageHeader.Title >
-          Secret Share
-        </PageHeader.Title>
-        <PageHeader.Content>
-          <VerifiedUser />
-        </PageHeader.Content>
-      </PageHeader>
-      {children}
+      <Box p={1}>
+        <PageHeader>
+          <PageHeader.Title >
+            Secret Share
+          </PageHeader.Title>
+          <PageHeader.Content>
+            <VerifiedUser />
+          </PageHeader.Content>
+        </PageHeader>
+        {children}
+      </Box>
     </AuthWrapper>
   )
 }

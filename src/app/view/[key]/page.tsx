@@ -28,16 +28,14 @@ export default function ViewPage({ params }: { params: Promise<{ key: string }> 
       {(isActive) => {
         if (isPasswordProtected && isActive && !data) {
           return (
-            <Box sx={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-              <PasswordForm
-                secretKey={key}
-                onSuccessCallBack={setData}
-              />
-            </Box>
+            <PasswordForm
+              secretKey={key}
+              onSuccessCallBack={setData}
+            />
           )
         }
         return (
-          <Box sx={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+          <Box>
             <Typography variant="h6">
               Secret Message
             </Typography>

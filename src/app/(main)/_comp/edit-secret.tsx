@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 export const EditSecret = ({ data }: { data: Secret }) => {
   const [open, setOpen] = React.useState(false);
   const editMutation = api.secret.update.useMutation();
+  const apiUtils = api.useUtils();
 
   const onSubmit = (formValues: TForm) => {
     editMutation.mutate(
@@ -22,8 +23,12 @@ export const EditSecret = ({ data }: { data: Secret }) => {
         key: data.key,
       },
       {
-        onSuccess: () => toast.success('Secret edited successfully'),
+        onSuccess: () => {
+          toast.success('Secret edited successfully');
+          apiUtils.secret.getAll.invalidate().catch(console.error);
+        },
         onError: (error) => toast.error(error.message ?? 'Something went wrong'),
+        onSettled: () => setOpen(false),
       }
     );
   }

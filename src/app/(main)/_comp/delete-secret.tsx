@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 export function DeleteSecret({ secretKey }: { secretKey: string }) {
   const [open, setOpen] = useState(false);
   const deleteMutation = api.secret.delete.useMutation();
+  const apiUtils = api.useUtils();
+
   return (
     <>
       <IconButton onClick={() => setOpen(true)}>
@@ -32,7 +34,10 @@ export function DeleteSecret({ secretKey }: { secretKey: string }) {
           <Button
             onClick={() => {
               deleteMutation.mutate({ key: secretKey }, {
-                onSuccess: () => toast.success('Secret deleted successfully'),
+                onSuccess: () => {
+                  toast.success('Secret deleted successfully');
+                  apiUtils.secret.getAll.invalidate().catch(console.error);
+                },
                 onError: (error) => toast.error(error.message ?? 'Something went wrong'),
                 onSettled: () => setOpen(false),
               });
