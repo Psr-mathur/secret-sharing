@@ -11,7 +11,9 @@ export default function ViewPage({ params }: { params: Promise<{ key: string }> 
   const [data, setData] = useState<Secret | null>(null);
   const isPasswordProtected = key.length === 8;
 
-  const isActiveRes = api.secret.checkIsActive.useQuery({ key });
+  const isActiveRes = api.secret.checkIsActive.useQuery({ key }, {
+    refetchOnWindowFocus: false
+  });
 
   return (
     <ErrorAndLoaderWrapper

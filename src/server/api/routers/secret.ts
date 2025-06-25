@@ -101,7 +101,7 @@ export const secretRouter = createTRPCRouter({
       if (data?.password && data.password !== input.password) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: `Password is incorrect ${input.password}`,
+          message: `Password is incorrect`,
         });
       }
       if (data) {
