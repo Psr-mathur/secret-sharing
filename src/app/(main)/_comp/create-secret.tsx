@@ -21,6 +21,7 @@ export const CreateSecret = () => {
         onSuccess: () => {
           toast.success('Secret created successfully');
           apiUtils.secret.getAll.invalidate().catch(console.error);
+          apiUtils.secret.getCounts.invalidate().catch(console.error);
         },
         onError: () => toast.error('Something went wrong'),
         onSettled: () => setOpen(false),

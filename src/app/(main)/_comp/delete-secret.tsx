@@ -37,6 +37,7 @@ export function DeleteSecret({ secretKey }: { secretKey: string }) {
                 onSuccess: () => {
                   toast.success('Secret deleted successfully');
                   apiUtils.secret.getAll.invalidate().catch(console.error);
+                  apiUtils.secret.getCounts.invalidate().catch(console.error);
                 },
                 onError: (error) => toast.error(error.message ?? 'Something went wrong'),
                 onSettled: () => setOpen(false),
