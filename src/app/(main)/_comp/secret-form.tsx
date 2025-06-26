@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
   Box, TextField, Radio, RadioGroup, FormControlLabel, FormControl,
-  FormLabel, Button
+  FormLabel, Button,
+  type ButtonProps
 } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -16,9 +17,10 @@ export type TForm = {
 type FormProps = {
   data?: TForm;
   onSubmit: (formValues: TForm) => void;
+  submitBtnProps?: ButtonProps;
 }
 
-export const SecretForm: React.FC<FormProps> = ({ data, onSubmit }) => {
+export const SecretForm: React.FC<FormProps> = ({ data, onSubmit, submitBtnProps }) => {
   const [accessType, setAccessType] = useState<'public' | 'password'>(data?.password ? 'password' : 'public');
   const [formValues, setFormValues] = useState<TForm>(data ?? {
     content: '',
@@ -117,6 +119,7 @@ export const SecretForm: React.FC<FormProps> = ({ data, onSubmit }) => {
         fullWidth
         sx={{ mt: 2 }}
         onClick={handleSubmit}
+        {...submitBtnProps}
       >
         {data ? 'Update' : 'Share'}
       </Button>

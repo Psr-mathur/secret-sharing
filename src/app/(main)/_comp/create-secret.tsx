@@ -48,6 +48,9 @@ export const CreateSecret = () => {
         <DialogContent>
           <SecretForm
             onSubmit={onSubmit}
+            submitBtnProps={{
+              disabled: createMutation.isPending
+            }}
           />
         </DialogContent>
       </Dialog>

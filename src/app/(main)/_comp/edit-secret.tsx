@@ -57,6 +57,9 @@ export const EditSecret = ({ data }: { data: Secret }) => {
               expiresAt: data.expiresAt ? dayjs(data.expiresAt) : null,
             }}
             onSubmit={onSubmit}
+            submitBtnProps={{
+              disabled: editMutation.isPending
+            }}
           />
         </DialogContent>
       </Dialog>
